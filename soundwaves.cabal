@@ -34,6 +34,7 @@ library
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , process
   default-language: Haskell2010
 
 executable soundwaves-exe
@@ -46,6 +47,7 @@ executable soundwaves-exe
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , process
     , soundwaves
   default-language: Haskell2010
 
@@ -60,5 +62,6 @@ test-suite soundwaves-test
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , process
     , soundwaves
   default-language: Haskell2010

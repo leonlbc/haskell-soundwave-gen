@@ -4,11 +4,16 @@ import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Builder as BB
 import Data.Foldable
 import Lib
+import System.Process
+import Text.Printf
 
 type Samples = Float
 type Seconds = Float
 type Hz = Float
 type Pulse = Float
+
+outputPath :: FilePath
+outputPath = "output.bin"
 
 -- O volume corresponde à amplitude das ondas
 volume :: Float
@@ -41,8 +46,16 @@ freq hz duration =
 wave :: [Pulse]
 wave = concat [freq 440.0 1, freq 540.0 1]
 
-save :: IO ()
-save = BL.writeFile "output.bin" $ BB.toLazyByteString $ fold $ map BB.floatLE wave
+save :: FilePath -> IO ()
+save path = BL.writeFile path $ BB.toLazyByteString $ fold $ map BB.floatLE wave
+
+play :: IO ()
+play = do 
+  save outputPath
+  runCommand $ printf "ffplay -f f32le -ar 44100 %s" outputPath
+  return ()
+
+
 
 main :: IO ()
 main = someFunc
