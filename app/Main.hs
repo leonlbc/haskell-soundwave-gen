@@ -1,13 +1,14 @@
 module Main (main) where
 
+import qualified Data.ByteString.Lazy as BL
+import qualified Data.ByteString.Builder as BB
+import Data.Foldable
 import Lib
-
 
 type Samples = Float
 type Seconds = Float
 type Hz = Float
 type Pulse = Float
-
 
 -- O volume corresponde à amplitude das ondas
 volume :: Float
@@ -39,6 +40,9 @@ freq hz duration =
 
 wave :: [Pulse]
 wave = concat [freq 440.0 1, freq 540.0 1]
+
+save :: IO ()
+save = BL.writeFile "output.bin" $ BB.toLazyByteString $ fold $ map BB.floatLE wave
 
 main :: IO ()
 main = someFunc
