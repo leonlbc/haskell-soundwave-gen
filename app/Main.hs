@@ -18,7 +18,7 @@ outputPath = "output.bin"
 
 -- O volume corresponde à amplitude das ondas
 volume :: Float
-volume = 0.5
+volume = 0.3
 
 -- Como as ondas digitais não são continuas,
 --  o sample rate é a taxa de samples por segundo
@@ -43,15 +43,17 @@ intervalo semi = pitchStandard * (2 ** (1.0/12.0)) ** semi
 note :: Semitones -> Seconds -> [Pulse]
 note n duration = freq (intervalo n) duration
 
--- a função freq é basicamente f(x)=a sen(b(x))
---  onde "a" é o volume e "b" é o step (de acordo com o hz)
+-- a função freq é f(x)=a sen(b(x))
+--  onde "a" é o volume e "b" é o step
 freq :: Hz -> Seconds -> [Pulse]
 freq hz duration = 
   map (* volume) $
-  map sin $
-  map (* step) [0.0 .. sampleRate * duration ]
+  zipWith (*) release $ zipWith (*) attack sinewave
   where
-    step = (hz * 2 * pi) / sampleRate      
+    step = (hz * 2 * pi) / sampleRate
+    sinewave = map sin $ map (* step) [0.0 .. sampleRate * duration ]
+    attack = map (min 1) [0.0, 0.001 .. ]
+    release = reverse $ take (length sinewave) attack   
 
 majorScale :: [Pulse]
 majorScale = concat [note 0 duration,
@@ -71,7 +73,7 @@ save path w = BL.writeFile path $ BB.toLazyByteString $ fold $ map BB.floatLE w
 play :: IO ()
 play = do 
   save outputPath majorScale
-  runCommand $ printf "ffplay -showmode 1 -f f32le -ar %f %s" sampleRate outputPath
+  _ <- runCommand $ printf "ffplay -showmode 1 -f f32le -ar %f %s" sampleRate outputPath
   return ()
 
 main :: IO ()
