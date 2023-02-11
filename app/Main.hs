@@ -12,6 +12,7 @@ type Seconds = Float
 type Hz = Float
 type Pulse = Float
 type Semitones = Float
+type Beats = Float
 
 outputPath :: FilePath
 outputPath = "output.bin"
@@ -39,9 +40,19 @@ pitchStandard = 440.0
 intervalo :: Semitones -> Hz
 intervalo semi = pitchStandard * (2 ** (1.0/12.0)) ** semi
 
+-- Beats por minuto
+bpm :: Beats
+bpm = 136.0
+
+-- Segundos por beat (tempo)
+--  porque a duração de nossa frequência está em segundos.
+beatDuration :: Seconds
+beatDuration = 60.0 / bpm
+
 -- Gera uma nota "n" semitons acima do pitch standard.
-note :: Semitones -> Seconds -> [Pulse]
-note n duration = freq (intervalo n) duration
+--  A duração está em beats.
+note :: Semitones -> Beats -> [Pulse]
+note n beats = freq (intervalo n) (beats * beatDuration)
 
 -- a função freq é f(x)=a sen(b(x))
 --  onde "a" é o volume e "b" é o step
@@ -55,24 +66,31 @@ freq hz duration =
     attack = map (min 1) [0.0, 0.001 .. ]
     release = reverse $ take (length sinewave) attack   
 
-majorScale :: [Pulse]
-majorScale = concat [note 0 duration,
-               note 2 duration,
-               note 4 duration,
-               note 5 duration,
-               note 7 duration,
-               note 9 duration,
-               note 11 duration,
-               note 12 duration
-              ]
-  where duration = 1.0
+darude :: [[Pulse]]
+darude = [note 0 0.25,note 0 0.25,note 0 0.25,note 0 0.25,
+         note 0 0.5,note 0 0.25,note 0 0.25,note 0 0.25,
+         note 0 0.25,note 0 0.25,note 0 0.25,note 0 0.5, 
+         note 5 0.25,note 5 0.25,note 5 0.25,note 5 0.25,
+         note 5 0.25,note 5 0.25,note 5 0.5,note 3 0.25,
+         note 3 0.25,note 3 0.25,note 3 0.25,note 3 0.25,
+         note 3 0.25,note 3 0.5,note (-2) 0.25,note (-2) 0.25,
+         note 0 0.25,note 0 0.25,note 0 0.25,note 0 0.25,
+         note 0 0.5,note 0 0.25,note 0 0.25,note 0 0.25,
+         note 0 0.25,note 0 0.25,note 0 0.25,note 0 0.5,
+         note 5 0.25,note 5 0.25,note 0 0.25,note 0 0.25,
+         note 0 0.25,note 0 0.25,note 0 0.5,note 0 0.25,
+         note 0 0.25,note 0 0.25,note 0 0.25,note 0 0.25,
+         note 0 0.25,note 0 0.5,note 5 0.25,note 5 0.25]
+
+music :: [Pulse]
+music = concat $ darude ++ darude
 
 save :: FilePath -> [Pulse] -> IO ()
 save path w = BL.writeFile path $ BB.toLazyByteString $ fold $ map BB.floatLE w
 
 play :: IO ()
 play = do 
-  save outputPath majorScale
+  save outputPath music
   _ <- runCommand $ printf "ffplay -showmode 1 -f f32le -ar %f %s" sampleRate outputPath
   return ()
 
