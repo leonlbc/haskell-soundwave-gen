@@ -96,6 +96,7 @@ noteByNTuple :: Beats -> (Notation, Octaves) -> [Pulse]
 noteByNTuple beats x = noteByN (fst x) (snd x) beats
 
 -- Gera um acorde com uma lista de tuplas notacao-oitava
+-- English Translation: Generates a chord from a list of notation-octave tuples
 chord :: [(Notation, Octaves)] -> Beats -> [Pulse]
 chord noteList beats =
   map (/ln) $
@@ -121,9 +122,6 @@ notationToSemi notation oct = (+) octDiff $ noteIndex
     octDiff = (oct - defaultOctave) * 12.0
     noteIndex = fromIntegral $ fromJust $ (L.elemIndex (map toUpper notation) fullOctave)
 
-darudeFourTimes :: [Pulse]
-darudeFourTimes = concat $ iterate ((++) darude) darude !! 3
-
 save :: FilePath -> [Pulse] -> IO ()
 save path w = BL.writeFile path $ BB.toLazyByteString $ fold $ map BB.floatLE w
 
@@ -136,6 +134,9 @@ play = do
 main :: IO ()
 main = do
   play 
+
+darudeFourTimes :: [Pulse]
+darudeFourTimes = concat $ iterate ((++) darude) darude !! 3
 
 darude :: [[Pulse]]
 darude = [note 0 0.25,note 0 0.25,note 0 0.25,note 0 0.25,
