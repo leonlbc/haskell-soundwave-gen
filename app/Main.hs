@@ -21,18 +21,25 @@ outputPath :: FilePath
 outputPath = "output.bin"
 
 -- O volume corresponde à amplitude das ondas
+-- English Translation: The volume corresponds to the amplitude of the wave
 volume :: Float
 volume = 0.3
 
 -- Como as ondas digitais não são continuas,
 --  o sample rate é a taxa de samples por segundo
 --  que vao ser retidas. Vamos usar 44.100 (44.1kHz) por padrão.
+-- English translation: As the digital waves can't be continuous, the sample rate is the
+--  how many samples per second that are recorded.
+--  We're going to use the 44.100 (44.1Hz) rate, as it is the standard for music.
 sampleRate :: Samples
 sampleRate = 44100.0
 
 -- O Pitch Standard (A440) corresponde a frequencia 440Hz
 --  e é usado como a nota de afinação padrão (ISO 16).
 -- Por isso, vamos usá-la como a nota base. 
+-- English Translation: The Pitch Standard (A440) corresponds
+--  to the 440Hz frequency and is used as the standard tuning note (ISO 16).
+--  So we will use it as the base note.
 pitchStandard :: Hz
 pitchStandard = 440.0
 
@@ -40,29 +47,39 @@ pitchStandard = 440.0
 --  sistema de oitavas (12-TET) a partir do pitch standard.
 -- Nesse sistema os semitons sao separados por uma razão
 -- logaritmica de raiz indice 12 de 2.
+-- English Translation: This is the formula for generating octave system frequencies (12-TET) from standard pitch.
+--  In this system the semitones are separated by a logarithmic ratio root index 12 of 2.
 intervalo :: Semitones -> Hz
 intervalo semi = pitchStandard * (2 ** (1.0/12.0)) ** semi
 
--- Beats por minuto
+-- Beats Por Minuto
+-- English Translation: Beats Per Minute
 bpm :: Beats
 bpm = 136.0
 
 -- Segundos por beat (tempo)
---  porque a duração de nossa frequência está em segundos.
+--  porque a duração de nossa frequência está em  Hertz (ciclos por segundo).
+-- English Translation: Seconds per beat (tempo), because the duration
+--  of our frequency is in Hertz (cycles per second)
 beatDuration :: Seconds
 beatDuration = 60.0 / bpm
 
 -- Gera uma nota "n" semitons acima/abaixo do pitch standard.
 --  A duração está em beats.
+-- English Translation: Generates a note "n" semitones above/below the standard pitch.
+--  Duration is in beats (changes according to the BPM).
 note :: Semitones -> Beats -> [Pulse]
 note n beats = freq (intervalo n) (beats * beatDuration)
 
 -- Gera uma nota a partir da notação musical
+-- English Translation: Returns a note from the corresponding music notation.
 noteByN :: String -> Float -> Beats -> [Pulse]
 noteByN notation octave beats = freq (intervalo (notationToSemi notation octave)) (beats * beatDuration)
 
 -- a função freq é f(x)=a sen(b(x))
 --  onde "a" é o volume e "b" é o step
+-- English Translation: This function, in mathematical notation, is f(x)=a sin(b(x))
+--  where "a" is the volume and "b" is the step
 freq :: Hz -> Seconds -> [Pulse]
 freq hz duration = 
   map (* volume) $
@@ -86,6 +103,8 @@ defaultOctave = 4
 
 -- Converte notação para semitons ex.: "A" 4 -> 0 ; "A#" 4 -> 1 ; ...
 --   TODO: Tratar erro quando notation não existe
+-- English Translation: Convert notation to semitones
+--  E.g.: "A" 4 -> 0 ; "A#" 4 -> 1 ; ...
 notationToSemi :: String -> Octaves -> Semitones
 notationToSemi notation oct = (+) octDiff $ noteIndex
   where
