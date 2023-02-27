@@ -16,6 +16,7 @@ type Pulse = Float
 type Semitones = Float
 type Beats = Float
 type Octaves = Float
+type Notation = String
 
 outputPath :: FilePath
 outputPath = "output.bin"
@@ -23,7 +24,7 @@ outputPath = "output.bin"
 -- O volume corresponde à amplitude das ondas
 -- English Translation: The volume corresponds to the amplitude of the wave
 volume :: Float
-volume = 0.3
+volume = 0.5
 
 -- Como as ondas digitais não são continuas,
 --  o sample rate é a taxa de samples por segundo
@@ -73,7 +74,7 @@ note n beats = freq (intervalo n) (beats * beatDuration)
 
 -- Gera uma nota a partir da notação musical
 -- English Translation: Returns a note from the corresponding music notation.
-noteByN :: String -> Float -> Beats -> [Pulse]
+noteByN :: Notation -> Octaves -> Beats -> [Pulse]
 noteByN notation octave beats = freq (intervalo (notationToSemi notation octave)) (beats * beatDuration)
 
 -- a função freq é f(x)=a sen(b(x))
@@ -90,21 +91,21 @@ freq hz duration =
     attack = map (min 1) [0.0, 0.001 .. ]
     release = reverse $ take (length sinewave) attack   
 
-additiveSynth :: String -> Float -> String -> Float -> Beats -> [Pulse]
-additiveSynth note_1 octave_1 note_2 octave_2 beats = zipWith (+)
-  (noteByN note_1 octave_1 beats)
-  (noteByN note_2 octave_2 beats)
-
-
-noteByNTuple :: Beats -> (String, Float) -> [Pulse]
+-- Atualiza a função noteByN para receber uma tupla ("Notacao", Oitava)
+noteByNTuple :: Beats -> (Notation, Octaves) -> [Pulse]
 noteByNTuple beats x = noteByN (fst x) (snd x) beats
 
-chord :: [(String, Float)] -> Beats -> [Pulse]
-chord noteList beats = foldr (zipWith (+)) (repeat 0.0) $ map (noteByNTuple beats) noteList
-
+-- Gera um acorde com uma lista de tuplas notacao-oitava
+chord :: [(Notation, Octaves)] -> Beats -> [Pulse]
+chord noteList beats =
+  map (/ln) $
+  foldr (zipWith (+)) (repeat 0.0) $
+  map (noteByNTuple beats) noteList
+  where
+    ln = fromIntegral $ length noteList
 -- Example: [("A", 4), ("D", 4), ("E", 4)]
 
-fullOctave :: [String]
+fullOctave :: [Notation]
 fullOctave = ["A","A#","B","C","C#","D","D#","E","F","F#","G","G#"]
 
 defaultOctave :: Octaves
@@ -114,7 +115,7 @@ defaultOctave = 4
 --   TODO: Tratar erro quando notation não existe
 -- English Translation: Convert notation to semitones
 --  E.g.: "A" 4 -> 0 ; "A#" 4 -> 1 ; ...
-notationToSemi :: String -> Octaves -> Semitones
+notationToSemi :: Notation -> Octaves -> Semitones
 notationToSemi notation oct = (+) octDiff $ noteIndex
   where
     octDiff = (oct - defaultOctave) * 12.0
