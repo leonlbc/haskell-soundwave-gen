@@ -73,6 +73,11 @@ freq hz duration =
     attack = map (min 1) [0.0, 0.001 .. ]
     release = reverse $ take (length sinewave) attack   
 
+additiveSynth :: String -> Float -> String -> Float -> Beats -> [Pulse]
+additiveSynth note_1 octave_1 note_2 octave_2 beats = zipWith (+)
+  (noteByN note_1 octave_1 beats)
+  (noteByN note_2 octave_2 beats)
+
 fullOctave :: [String]
 fullOctave = ["A","A#","B","C","C#","D","D#","E","F","F#","G","G#"]
 
