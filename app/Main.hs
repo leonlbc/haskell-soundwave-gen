@@ -72,11 +72,6 @@ beatDuration = 60.0 / bpm
 note :: Semitones -> Beats -> [Pulse]
 note n beats = freq (intervalo n) (beats * beatDuration)
 
--- Gera uma nota a partir da notação musical
--- English Translation: Returns a note from the corresponding music notation.
-noteByN :: Notation -> Octaves -> Beats -> [Pulse]
-noteByN notation octave beats = freq (intervalo (notationToSemi notation octave)) (beats * beatDuration)
-
 -- a função freq é f(x)=a sen(b(x))
 --  onde "a" é o volume e "b" é o step
 -- English Translation: This function, in mathematical notation, is f(x)=a sin(b(x))
@@ -90,6 +85,17 @@ freq hz duration =
     sinewave = map sin $ map (* step) [0.0 .. sampleRate * duration ]
     attack = map (min 1) [0.0, 0.001 .. ]
     release = reverse $ take (length sinewave) attack   
+
+fullOctave :: [Notation]
+fullOctave = ["A","A#","B","C","C#","D","D#","E","F","F#","G","G#"]
+
+defaultOctave :: Octaves
+defaultOctave = 4
+
+-- Gera uma nota a partir da notação musical
+-- English Translation: Returns a note from the corresponding music notation.
+noteByN :: Notation -> Octaves -> Beats -> [Pulse]
+noteByN notation octave beats = freq (intervalo (notationToSemi notation octave)) (beats * beatDuration)
 
 -- Atualiza a função noteByN para receber uma tupla ("Notacao", Oitava)
 noteByNTuple :: Beats -> (Notation, Octaves) -> [Pulse]
@@ -106,11 +112,6 @@ chord noteList beats =
     ln = fromIntegral $ length noteList
 -- Example: [("A", 4), ("D", 4), ("E", 4)]
 
-fullOctave :: [Notation]
-fullOctave = ["A","A#","B","C","C#","D","D#","E","F","F#","G","G#"]
-
-defaultOctave :: Octaves
-defaultOctave = 4
 
 -- Converte notação para semitons ex.: "A" 4 -> 0 ; "A#" 4 -> 1 ; ...
 --   TODO: Tratar erro quando notation não existe
