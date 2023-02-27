@@ -95,6 +95,15 @@ additiveSynth note_1 octave_1 note_2 octave_2 beats = zipWith (+)
   (noteByN note_1 octave_1 beats)
   (noteByN note_2 octave_2 beats)
 
+
+noteByNTuple :: Beats -> (String, Float) -> [Pulse]
+noteByNTuple beats x = noteByN (fst x) (snd x) beats
+
+chord :: [(String, Float)] -> Beats -> [Pulse]
+chord noteList beats = foldr (zipWith (+)) (repeat 0.0) $ map (noteByNTuple beats) noteList
+
+-- Example: [("A", 4), ("D", 4), ("E", 4)]
+
 fullOctave :: [String]
 fullOctave = ["A","A#","B","C","C#","D","D#","E","F","F#","G","G#"]
 
